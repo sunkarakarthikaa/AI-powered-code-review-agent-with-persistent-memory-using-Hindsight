@@ -54,3 +54,23 @@ Code Analysis       Hindsight Memory
        Review Knowledge
           retained
         in Hindsight
+
+
+## Files Excluded from GitHub
+
+For security and repository cleanliness, certain local files and generated files are intentionally excluded using `.gitignore`.
+
+These include:
+
+- `.env` and other environment files containing secrets
+- Build output such as `target/` and `frontend/dist/`
+- Dependency folders such as `frontend/node_modules/`
+- Local IDE configuration
+- Logs
+- Local MongoDB data
+- Local Hindsight data
+- Other runtime-generated files
+
+The repository includes `.env.example` as a safe template for required environment variables.
+
+> **Note:** API keys, passwords, database credentials, and other secrets are never committed to the repository.
