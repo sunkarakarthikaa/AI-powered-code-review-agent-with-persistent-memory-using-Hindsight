@@ -1,0 +1,64 @@
+name: Self Review (PR Guardian reviews its own PRs)
+
+# This is the "recursive" flex: PR Guardian is used to review changes made
+# to PR Guardian itself. It calls the LLM directly here (rather than
+# standing up the full backend + Mongo in CI, which is more infrastructure
+# than a demo needs) — the point being demonstrated is the review LOGIC
+# running against a real diff in a real CI context, not full-stack parity.
+#
+# Requires an ANTHROPIC_API_KEY secret configured in the repo settings.
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  self-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get PR diff
+        id: diff
+        run: |
+          git diff origin/${{ github.base_ref }}...origin/${{ github.head_ref }} > pr.diff
+          echo "diff_lines=$(wc -l < pr.diff)" >> "$GITHUB_OUTPUT"
+
+      - name: Run AI review
+        id: review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          DIFF_CONTENT=$(cat pr.diff | head -c 8000)
+
+          RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
+            -H "x-api-key: $ANTHROPIC_API_KEY" \
+            -H "anthropic-version: 2023-06-01" \
+            -H "content-type: application/json" \
+            -d @- <<EOF
+          {
+            "model": "claude-sonnet-4-6",
+            "max_tokens": 500,
+            "system": "You review code diffs for a project called PR Guardian, an AI-powered PR review governance system. Respond with a short plain-text summary (3-5 sentences) of risk and code quality observations. No JSON, no markdown fences.",
+            "messages": [{"role": "user", "content": "Review this diff:\n\n$DIFF_CONTENT"}]
+          }
+          EOF
+          )
+
+          SUMMARY=$(echo "$RESPONSE" | python3 -c "import json,sys; print(json.load(sys.stdin)['content'][0]['text'])")
+          echo "summary<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$SUMMARY" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Post review as PR comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `### 🛡️ PR Guardian Self-Review\n\n${{ steps.review.outputs.summary }}\n\n*This PR was reviewed by the same AI pipeline this project implements.*`
+            })
