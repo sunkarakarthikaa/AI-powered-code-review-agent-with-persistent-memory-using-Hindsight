@@ -1,0 +1,75 @@
+[33mcommit 5a85b0fba7ae3391261bce29ad5082f6177a294f[m
+Author: sunkarakarthikaa <sunkarakarthika@gmail.com>
+Date:   Mon Sep 28 13:36:58 2026 +0530
+
+    Initial PR Guardian implementation
+
+ .env.example                                       |    7 [32m+[m
+ .gitattributes                                     |    2 [32m+[m
+ .github/workflows/ci.yml                           |   69 [32m+[m
+ .github/workflows/self-review.yml                  |   64 [32m+[m
+ .gitignore                                         |   34 [32m+[m
+ .mvn/wrapper/maven-wrapper.properties              |    3 [32m+[m
+ README.md                                          |   22 [32m+[m
+ backend/.dockerignore                              |    5 [32m+[m
+ backend/Dockerfile                                 |   35 [32m+[m
+ docker-compose.yml                                 |   40 [32m+[m
+ frontend/.gitignore                                |   24 [32m+[m
+ frontend/Dockerfile                                |   24 [32m+[m
+ frontend/README.md                                 |   75 [32m+[m
+ frontend/eslint.config.js                          |   22 [32m+[m
+ frontend/index.css                                 |   76 [32m+[m
+ frontend/index.html                                |   19 [32m+[m
+ frontend/nginx.conf                                |   12 [32m+[m
+ frontend/package-lock.json                         | 2679 [32m++++++++++++++++++++[m
+ frontend/package.json                              |   30 [32m+[m
+ frontend/public/favicon.svg                        |    1 [32m+[m
+ frontend/public/icons.svg                          |   24 [32m+[m
+ frontend/src/App.tsx                               |  158 [32m++[m
+ frontend/src/api/client.ts                         |   35 [32m+[m
+ frontend/src/assets/hero.png                       |  Bin [31m0[m -> [32m13057[m bytes
+ frontend/src/assets/react.svg                      |    1 [32m+[m
+ frontend/src/assets/vite.svg                       |    1 [32m+[m
+ frontend/src/components/Badge.tsx                  |   46 [32m+[m
+ frontend/src/components/PrDetail.tsx               |  138 [32m+[m
+ frontend/src/components/PrList.tsx                 |   97 [32m+[m
+ frontend/src/components/SubmitPrForm.tsx           |  128 [32m+[m
+ frontend/src/components/VerdictLedger.tsx          |  195 [32m++[m
+ frontend/src/index.css                             |  111 [32m+[m
+ frontend/src/main.tsx                              |   10 [32m+[m
+ frontend/tsconfig.app.json                         |   26 [32m+[m
+ frontend/tsconfig.json                             |    7 [32m+[m
+ frontend/tsconfig.node.json                        |   23 [32m+[m
+ frontend/vite.config.ts                            |    7 [32m+[m
+ mvnw                                               |  295 [32m+++[m
+ mvnw.cmd                                           |  189 [32m++[m
+ pom.xml                                            |   64 [32m+[m
+ .../com/prguardian/PrGuardianLiteApplication.java  |   12 [32m+[m
+ .../java/com/prguardian/config/CorsConfig.java     |   31 [32m+[m
+ .../controller/PullRequestController.java          |   78 [32m+[m
+ .../prguardian/controller/RetrievalController.java |   48 [32m+[m
+ .../java/com/prguardian/dto/SubmitPrRequest.java   |   74 [32m+[m
+ .../java/com/prguardian/llm/AnthropicClient.java   |   72 [32m+[m
+ .../prguardian/llm/InvalidVerdictException.java    |   26 [32m+[m
+ .../java/com/prguardian/llm/PromptBuilder.java     |   94 [32m+[m
+ .../java/com/prguardian/llm/ReviewService.java     |   83 [32m+[m
+ .../com/prguardian/llm/ReviewVerdictParser.java    |   99 [32m+[m
+ .../java/com/prguardian/model/PullRequest.java     |  137 [32m+[m
+ .../java/com/prguardian/model/ReviewVerdict.java   |  110 [32m+[m
+ .../repository/PullRequestRepository.java          |   20 [32m+[m
+ .../java/com/prguardian/retrieval/CodeChunk.java   |   42 [32m+[m
+ .../prguardian/retrieval/CodeIndexingService.java  |   52 [32m+[m
+ .../com/prguardian/retrieval/CosineSimilarity.java |   35 [32m+[m
+ .../com/prguardian/retrieval/EmbeddingClient.java  |   14 [32m+[m
+ .../retrieval/OpenAiEmbeddingClient.java           |   68 [32m+[m
+ .../com/prguardian/retrieval/RetrievalService.java |   37 [32m+[m
+ .../java/com/prguardian/retrieval/VectorStore.java |   58 [32m+[m
+ src/main/resources/application.properties          |   14 [32m+[m
+ src/main/resources/sample-repo/PaymentUtils.java   |   15 [32m+[m
+ src/main/resources/sample-repo/SECURITY_POLICY.md  |   24 [32m+[m
+ src/main/resources/sample-repo/UserService.java    |   32 [32m+[m
+ .../prguardian/PrGuardianLiteApplicationTests.java |   13 [32m+[m
+ src/types/PullRequest.ts                           |    0
+ src/types/ReviewVerdict.ts                         |    0
+ src/types/index.ts                                 |   42 [32m+[m
+ 68 files changed, 6128 insertions(+)

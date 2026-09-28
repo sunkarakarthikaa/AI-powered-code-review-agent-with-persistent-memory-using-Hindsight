@@ -1,22 +1,56 @@
-PR Guardian Lite
+# PR Guardian — AI Code Review Agent with Persistent Memory
 
-An AI-native pull request review assistant that grounds LLM code review in your actual codebase — not just the diff.
+PR Guardian is an AI-powered pull request review system that analyzes code changes, identifies potential issues, and provides structured review feedback.
 
-Most AI PR reviewers look at a diff in isolation and hallucinate context. PR Guardian Lite fixes that by retrieving relevant code context from the repository before generating a review, then validating the LLM's output through a two-layer guardrail before it's ever shown to a developer.
+The system uses **Hindsight as a persistent memory layer**, allowing PR Guardian to retain knowledge from previous pull-request reviews and recall relevant context when reviewing future pull requests.
 
-How it works
-Retrieval (RAG): Code changes are embedded and compared against a custom in-memory vector store using cosine similarity, pulling in the most relevant existing code as context — so the LLM reviews with knowledge of the surrounding system, not just the isolated diff.
-Review generation: The retrieved context + PR diff are sent to an LLM (Anthropic Claude), prompted to return a structured verdict: risk score, issues found, and reasoning.
-Guardrails: A two-layer validation system checks the LLM's output for structural correctness (valid JSON, expected fields) and semantic sanity (verdict consistency, score bounds) before it's persisted — so a malformed or nonsensical model response never reaches the dashboard.
-Dashboard: A React + TypeScript frontend surfaces the verdict, risk score, and the actual retrieved evidence the model used to reach its conclusion — so the reasoning is auditable, not a black box.
-Architecture
-Backend: Spring Boot + MongoDB, with clean DTO/entity separation
-Retrieval: Custom in-memory vector store with cosine similarity (a deliberate scale tradeoff over a dedicated vector DB, given the project's scope)
-Frontend: React + TypeScript (Vite), dark "control room" aesthetic
-LLM Integration: Anthropic API for review generation
-Guardrails: Two-layer output validation (structural + semantic) before verdicts are persisted
-Infra: Docker multi-stage builds with non-root users, orchestrated via Docker Compose
-CI/CD: GitHub Actions pipeline that runs the tool's own self-review on its own pull requests
-Why this design
+Instead of treating every pull request as an isolated task, PR Guardian can build a history of review knowledge and use that history to provide more context-aware reviews.
 
-The project treats reliability as a first-class concern rather than an afterthought — an LLM review pipeline is only trustworthy if you can guarantee its output is structurally valid and its reasoning is inspectable. The guardrail layer and evidence-surfacing dashboard exist specifically to make the AI's judgment auditable rather than opaque.
+---
+
+## Problem Statement
+
+Traditional AI code-review agents generally review each pull request independently.
+
+This creates a limitation: the agent may identify an issue in one pull request but have no persistent knowledge of that review when a similar issue appears in a future pull request.
+
+For example:
+
+- A developer introduces a particular coding pattern in PR #1.
+- PR Guardian identifies a problem and provides review feedback.
+- A similar pattern appears in PR #2.
+- A stateless review agent analyzes PR #2 from scratch.
+
+PR Guardian addresses this limitation by introducing **persistent agent memory using Hindsight**.
+
+---
+
+## Solution
+
+PR Guardian combines AI-powered code analysis with persistent memory.
+
+The workflow is:
+
+```text
+Pull Request
+     |
+     v
+PR Guardian
+     |
+     +--------------------+
+     |                    |
+     v                    v
+Code Analysis       Hindsight Memory
+     |                    |
+     |              Recall relevant
+     |              previous reviews
+     |                    |
+     +---------+----------+
+               |
+               v
+       Context-aware Review
+               |
+               v
+       Review Knowledge
+          retained
+        in Hindsight
